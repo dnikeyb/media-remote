@@ -39,10 +39,10 @@ The project consists of three main parts:
 
 **For Firefox (MV2):**
 To keep the extension permanently installed:
-1. Open the [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/submit/distribution).
-2. Choose **"On your own"** (Unlisted).
-3. Upload `firefox-extension.zip`.
-4. Download the signed `.xpi` file it provides and drag it onto your Firefox window to permanently install it.
+1. Open `about:addons`.
+2. Click the Gear Symbol **Tools for all Addons**.
+3. Click **Install from Files**.
+4. Go to **\firefox-extension\versions** and select **b874390525584760bedb-1.1.0.xpi**.
 
 ### 3. Connect the Remote
 1. Ensure your smartphone is connected to the same local WiFi network as your PC.
