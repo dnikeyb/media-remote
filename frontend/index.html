@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#050508" />
+    <title>Media Remote</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Animated background orbs -->
+    <div class="bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app glass-panel">
+      <!-- Header -->
+      <header class="header">
+        <div class="status-indicator" id="statusDot"></div>
+        <h1>Remote</h1>
+        <p class="status-text" id="statusText">Connecting...</p>
+      </header>
+
+      <!-- Controls -->
+      <main class="controls">
+        <div class="controls-grid">
+
+          <!-- Core Action -->
+          <button class="btn btn-primary top-row" id="btnPlayPause" data-command="PLAY_PAUSE">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Play / Pause</span>
+          </button>
+          
+          <!-- Secondary Actions -->
+          <button class="btn btn-secondary" id="btnRestart" data-command="RESTART_VIDEO">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 2v6h6"></path>
+              <path d="M3 13a9 9 0 1 0 3-7.7L3 8"></path>
+            </svg>
+            <span>Restart</span>
+          </button>
+
+          <button class="btn btn-secondary" id="btnSkipIntro" data-command="SKIP_INTRO">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="13 17 18 12 13 7"></polyline>
+              <polyline points="6 17 11 12 6 7"></polyline>
+              <text x="12" y="24" fill="currentColor" stroke="none" font-family="Outfit" font-size="7" font-weight="700" text-anchor="middle">85s</text>
+            </svg>
+            <span>Skip Intro</span>
+          </button>
+
+          <button class="btn btn-secondary" id="btnSeekBack" data-command="SEEK_BACK_10">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              <text x="12" y="16" fill="currentColor" stroke="none" font-family="Outfit" font-size="7" font-weight="700" text-anchor="middle">10</text>
+            </svg>
+            <span>Back</span>
+          </button>
+
+          <button class="btn btn-secondary" id="btnSeekForward" data-command="SEEK_FORWARD_10">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"></path>
+              <text x="12" y="16" fill="currentColor" stroke="none" font-family="Outfit" font-size="7" font-weight="700" text-anchor="middle">10</text>
+            </svg>
+            <span>Forward</span>
+          </button>
+
+          <!-- Media View Actions -->
+          <button class="btn btn-accent" id="btnNextEpisode" data-command="NEXT_EPISODE">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 4 15 12 5 20 5 4"></polygon>
+              <line x1="19" y1="5" x2="19" y2="19"></line>
+            </svg>
+            <span>Next Ep</span>
+          </button>
+
+          <button class="btn btn-fullscreen" id="btnFullscreen" data-command="TOGGLE_FULLSCREEN">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+            <span>Fullscreen</span>
+          </button>
+
+          <!-- Volume Row -->
+          <div class="volume-row">
+            <button class="btn btn-volume grid-auto" id="btnVolDown" data-command="VOLUME_DOWN">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              </svg>
+            </button>
+
+            <button class="btn btn-volume grid-auto" id="btnMute" data-command="MUTE_TOGGLE">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+            </button>
+
+            <button class="btn btn-volume grid-auto" id="btnVolUp" data-command="VOLUME_UP">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Bottom / Admin Controls -->
+          <button class="btn btn-danger" id="btnEmergency" data-command="EMERGENCY">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <span>Panic</span>
+          </button>
+
+          <button class="btn btn-reset" id="btnEmergencyReset" data-command="EMERGENCY_RESET">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <polyline points="3 3 3 8 8 8"></polyline>
+            </svg>
+            <span>Restore</span>
+          </button>
+
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>Server: <span id="serverAddress">localhost:8080</span></p>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
