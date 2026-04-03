@@ -591,6 +591,8 @@ if (window !== window.top && (detectSite() === "aniworld" || window.location.hre
   let attempts = 0;
   const maxAttempts = 15; // Try for ~7.5 seconds (15 * 500ms)
 
+  // A. Intersection/Mutation monitoring is implicitly handled by the polling loop below
+  
   // B. Polling loop: clicks overlays and tries muted playback as fallback
   const autoPlayInterval = setInterval(() => {
     attempts++;
