@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Remote Control Extension",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Allows smartphone remote control of YouTube, Netflix, and AniWorld via WebSocket",
   "browser_specific_settings": {
     "gecko": {
