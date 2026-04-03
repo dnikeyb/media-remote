@@ -90,15 +90,27 @@ function broadcastToIframes(commandPayload) {
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "VOE_COMMAND") {
     const video = getVideo();
-    if (!video) return;
+    // If no video is present, allow PLAY to click the initial overlay
+    if (!video && event.data.payload !== "PLAY_PAUSE") return;
 
     switch (event.data.payload) {
       case "PLAY_PAUSE":
-        if (video.paused) {
-          const overlay = document.querySelector('.plyr__control--overlaid') || document.querySelector('.play-btn') || document.querySelector('[class*="play-button"]');
-          if (overlay) overlay.click();
-          else video.play();
-        } else {
+        console.log("[Content] VOE Iframe: Attempting PLAY_PAUSE");
+        if (!video || video.paused) {
+          const overlay = document.querySelector('.plyr__control--overlaid') || 
+                          document.querySelector('.play-btn') || 
+                          document.querySelector('[class*="play-button"]') || 
+                          document.querySelector('.vjs-big-play-button') ||
+                          document.querySelector('.voe-play-button') ||
+                          document.querySelector('#play-button') ||
+                          document.querySelector('.big-play-button');
+          if (overlay) {
+            console.log("[Content] VOE Iframe: Found overlay button, clicking.");
+            overlay.click();
+          } else if (video) {
+            video.play();
+          }
+        } else if (video) {
           video.pause();
         }
         break;
@@ -205,6 +217,14 @@ function handlePlayPause(site) {
       `);
     }
   } else if (site === "aniworld") {
+    // AniWorld has a parent-level overlay before the iframe is actually active sometimes.
+    const parentOverlay = document.querySelector('.inSiteWebStream') || 
+                          document.querySelector('.hosterSiteVideo') || 
+                          document.querySelector('.play-wrapper') ||
+                          document.querySelector('.play-btn-large');
+    if (parentOverlay) {
+      parentOverlay.click();
+    }
     broadcastToIframes("PLAY_PAUSE");
   } else {
     // Fallback: directly toggle video play/pause
@@ -478,3 +498,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 console.log("[Content] Remote control content script loaded. Frame:", window === window.top ? "TOP" : "IFRAME", "Site:", detectSite());
+
+// Auto-trigger play button for AniWorld iframes on load to solve "Next Episode" not playing automatically
+if (window !== window.top && (detectSite() === "aniworld" || window.location.href.includes("voe"))) {
+  setTimeout(() => {
+    const overlay = document.querySelector('.plyr__control--overlaid') || 
+                    document.querySelector('.vjs-big-play-button') ||
+                    document.querySelector('.voe-play-button') ||
+                    document.querySelector('.play-btn') ||
+                    document.querySelector('.play-button');
+    if (overlay) {
+      console.log("[Content] Auto-play overlay found in iframe, clicking...");
+      overlay.click();
+    }
+  }, 2500);
+}
+
