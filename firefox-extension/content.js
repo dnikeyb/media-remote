@@ -34,6 +34,10 @@ function getVideo() {
   return document.querySelector("video");
 }
 
+function randomDelay(min = 200, max = 500) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 // ---- Netflix Helpers ----
 
 function netflixInjectScript(code) {
@@ -87,24 +91,73 @@ function broadcastToIframes(commandPayload) {
   });
 }
 
+const PLAY_SELECTORS = [
+  '.plyr__control--overlaid',
+  '.vjs-big-play-button',
+  '.voe-play-button',
+  '#play-button',
+  '.play-btn',
+  '.big-play-button',
+  '.play-overlay',
+  '.vp-controls-wrapper [aria-label="Play"]',
+  '[class*="play-button"]'
+];
+
+function tryPlayOverlay(video) {
+  // 1. Try specific known selectors
+  for (const selector of PLAY_SELECTORS) {
+    const btn = document.querySelector(selector);
+    if (btn && typeof btn.click === 'function' && btn.offsetParent !== null) {
+      const delay = randomDelay();
+      console.log('[Remote-Auto] Clicking play overlay after ' + delay + 'ms:', selector);
+      setTimeout(() => {
+        if (btn && typeof btn.click === 'function') btn.click();
+      }, delay);
+      return true; 
+    }
+  }
+
+  // 2. Brute Force Fallback: Click the exact center of the screen
+  const delay = randomDelay(600, 1000);
+  console.log('[Remote-Auto] Brute force: Clicking viewport center after ' + delay + 'ms');
+  setTimeout(() => {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const el = document.elementFromPoint(centerX, centerY);
+    if (el && typeof el.click === 'function') {
+      console.log('[Remote-Auto] Centered element found, clicking:', el.tagName);
+      el.click();
+    }
+  }, delay);
+
+  // 3. Direct Playback Fallback
+  if (video && video.paused) {
+    const playDelay = randomDelay(1200, 1600);
+    setTimeout(() => {
+      if (video && video.paused) {
+        video.play().catch(() => {
+          video.muted = true;
+          video.play();
+        });
+      }
+    }, playDelay);
+    return true;
+  }
+  return false;
+}
+
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "VOE_COMMAND") {
     const video = getVideo();
-    // If no video is present, allow PLAY to click the initial overlay
+    
+    // Commands other than Play/Pause still require a video element
     if (!video && event.data.payload !== "PLAY_PAUSE") return;
 
     switch (event.data.payload) {
       case "PLAY_PAUSE":
+        console.log("[Content] VOE Iframe: Attempting PLAY_PAUSE");
         if (!video || video.paused) {
-          const overlay = document.querySelector('.plyr__control--overlaid') || 
-                          document.querySelector('.play-btn') || 
-                          document.querySelector('[class*="play-button"]') || 
-                          document.querySelector('.vjs-big-play-button') ||
-                          document.querySelector('.voe-play-button') ||
-                          document.querySelector('#play-button') ||
-                          document.querySelector('.big-play-button');
-          if (overlay) overlay.click();
-          else if (video) video.play();
+          tryPlayOverlay(video);
         } else if (video) {
           video.pause();
         }
@@ -112,7 +165,7 @@ window.addEventListener("message", (event) => {
       case "SEEK_BACK_10":
         video.currentTime = Math.max(0, video.currentTime - 10);
         break;
-        case "SEEK_FORWARD_10":
+      case "SEEK_FORWARD_10":
         video.currentTime += 10;
         break;
       case "TOGGLE_FULLSCREEN":
@@ -180,6 +233,32 @@ function performAniWorldNextEpisode() {
   return false;
 }
 
+function ensureVoeActive() {
+  if (detectSite() !== "aniworld") return false;
+  
+  const hosterList = document.querySelector('.hosterSiteVideo ul') || document.querySelector('.hosterList');
+  if (!hosterList) return false;
+
+  const activeHoster = hosterList.querySelector('.active');
+  if (activeHoster && activeHoster.innerText.includes('VOE')) return true;
+
+  console.log('[Remote-Auto] VOE is not active. Attempting to switch to VOE...');
+  const voeLink = Array.from(hosterList.querySelectorAll('li'))
+                       .find(li => li.innerText.includes('VOE'));
+  if (voeLink) {
+    // Scroll player into view
+    document.querySelector('.hosterSiteVideo')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    const delay = randomDelay(400, 800);
+    setTimeout(() => {
+      console.log('[Remote-Auto] Clicking VOE hoster after ' + delay + 'ms');
+      voeLink.click();
+    }, delay);
+    return true;
+  }
+  return false;
+}
+
 // ---- Command Handlers ----
 
 function handlePlayPause(site) {
@@ -212,11 +291,20 @@ function handlePlayPause(site) {
       `);
     }
   } else if (site === "aniworld") {
+    // Check if we are on VOE hoster, if not, switch to it
+    ensureVoeActive();
+    
     // AniWorld has a parent-level overlay before the iframe is actually active sometimes.
-    const parentOverlay = document.querySelector('.inSiteWebStream') || document.querySelector('.hosterSiteVideo') || document.querySelector('.play-wrapper');
-    if (parentOverlay) {
-      parentOverlay.click();
-    }
+    const parentOverlays = ['.inSiteWebStream', '.hosterSiteVideo', '.play-wrapper', '.play-btn-large', '.play-button'];
+    parentOverlays.forEach(selector => {
+      const el = document.querySelector(selector);
+      if (el) {
+        const delay = randomDelay();
+        setTimeout(() => {
+          if (el && typeof el.click === 'function') el.click();
+        }, delay);
+      }
+    });
     broadcastToIframes("PLAY_PAUSE");
   } else {
     // Fallback: directly toggle video play/pause
@@ -491,18 +579,41 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 console.log("[Content] Remote control content script loaded. Frame:", window === window.top ? "TOP" : "IFRAME", "Site:", detectSite());
 
-// Auto-trigger play button for AniWorld iframes on load to solve "Next Episode" not playing automatically
+// Top-level check to ensure VOE is selected for AniWorld
+if (window === window.top && detectSite() === "aniworld") {
+  setTimeout(() => ensureVoeActive(), 2000);
+}
+
+// Hybrid Auto-trigger play button for AniWorld iframes on load
 if (window !== window.top && (detectSite() === "aniworld" || window.location.href.includes("voe"))) {
-  setTimeout(() => {
-    const overlay = document.querySelector('.plyr__control--overlaid') || 
-                    document.querySelector('.vjs-big-play-button') ||
-                    document.querySelector('.voe-play-button') ||
-                    document.querySelector('.play-btn') ||
-                    document.querySelector('.play-button');
-    if (overlay) {
-      console.log("[Content] Auto-play overlay found in iframe, clicking...");
-      overlay.click();
+  console.log("[Content] VOE iframe detected. Starting hybrid auto-play monitoring...");
+  
+  let attempts = 0;
+  const maxAttempts = 15; // Try for ~7.5 seconds (15 * 500ms)
+
+  // A. Intersection/Mutation monitoring is implicitly handled by the polling loop below
+  
+  // B. Polling loop: clicks overlays and tries muted playback as fallback
+  const autoPlayInterval = setInterval(() => {
+    attempts++;
+    const video = getVideo();
+
+    // Kill interval if video starts playing
+    if (video && !video.paused) {
+      console.log("[Content] Video is playing, stopping monitoring.");
+      clearInterval(autoPlayInterval);
+      return;
     }
-  }, 2500);
+
+    // Try starting the video either via overlay click or fallback play()
+    if (tryPlayOverlay(video)) {
+        console.log("[Content] Auto-play action attempted (Attempt " + attempts + ")");
+    }
+
+    if (attempts >= maxAttempts) {
+      console.log("[Content] Auto-play monitoring timed out.");
+      clearInterval(autoPlayInterval);
+    }
+  }, 500);
 }
 
