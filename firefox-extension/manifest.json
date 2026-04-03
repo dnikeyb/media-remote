@@ -5,7 +5,7 @@
   "description": "Allows smartphone remote control of YouTube, Netflix, and AniWorld via WebSocket",
   "browser_specific_settings": {
     "gecko": {
-      "id": "remote-control@localhost",
+      "id": "remote-control-plus@nikita-dev.tools",
       "strict_min_version": "109.0",
       "data_collection_permissions": {
         "required": ["none"]
