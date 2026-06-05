@@ -113,7 +113,7 @@ function tryPlayOverlay(video) {
       setTimeout(() => {
         if (btn && typeof btn.click === 'function') btn.click();
       }, delay);
-      return true; 
+      return true;
     }
   }
 
@@ -149,7 +149,7 @@ function tryPlayOverlay(video) {
 window.addEventListener("message", (event) => {
   if (event.data && event.data.type === "VOE_COMMAND") {
     const video = getVideo();
-    
+
     // Commands other than Play/Pause still require a video element
     if (!video && event.data.payload !== "PLAY_PAUSE") return;
 
@@ -181,9 +181,9 @@ window.addEventListener("message", (event) => {
       case "VOLUME_DOWN":
         video.volume = Math.max(0, Math.min(1, video.volume - 0.1));
         break;
-      case "MUTE_TOGGLE":
-        video.muted = !video.muted;
-        break;
+      //case "MUTE_TOGGLE":
+      //video.muted = !video.muted;
+      //break;
       case "SKIP_INTRO":
         video.currentTime += 85;
         break;
@@ -194,24 +194,24 @@ window.addEventListener("message", (event) => {
 function performAniWorldNextEpisode() {
   const path = window.location.pathname; // e.g., /anime/stream/name/staffel-1/episode-1
   const match = path.match(/\/staffel-(\d+)\/episode-(\d+)/i);
-  
+
   if (match) {
     const currentSeason = parseInt(match[1], 10);
     const currentEpisode = parseInt(match[2], 10);
-    
+
     // Attempt to find the next episode link directly
     const nextEpPath = path.replace(/\/episode-\d+/i, `/episode-${currentEpisode + 1}`);
     const nextEpLink = document.querySelector(`a[href$="${nextEpPath}"]`) || document.querySelector(`a[href="${nextEpPath}"]`);
-    
+
     if (nextEpLink) {
       nextEpLink.click();
       return true;
     }
-    
+
     // If next episode doesn't exist, check for the next season
     const nextSeasonPath = path.replace(/\/staffel-\d+\/episode-\d+/i, `/staffel-${currentSeason + 1}`);
     const nextSeasonLink = document.querySelector(`a[href$="${nextSeasonPath}"]`) || document.querySelector(`a[href^="${nextSeasonPath}"]`);
-    
+
     if (nextSeasonLink) {
       // Navigate to the first episode of the next season
       const nextSeasonEp1 = path.replace(/\/staffel-\d+\/episode-\d+/i, `/staffel-${currentSeason + 1}/episode-1`);
@@ -235,7 +235,7 @@ function performAniWorldNextEpisode() {
 
 function ensureVoeActive() {
   if (detectSite() !== "aniworld") return false;
-  
+
   const hosterList = document.querySelector('.hosterSiteVideo ul') || document.querySelector('.hosterList');
   if (!hosterList) return false;
 
@@ -244,11 +244,11 @@ function ensureVoeActive() {
 
   console.log('[Remote-Auto] VOE is not active. Attempting to switch to VOE...');
   const voeLink = Array.from(hosterList.querySelectorAll('li'))
-                       .find(li => li.innerText.includes('VOE'));
+    .find(li => li.innerText.includes('VOE'));
   if (voeLink) {
     // Scroll player into view
     document.querySelector('.hosterSiteVideo')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
+
     const delay = randomDelay(400, 800);
     setTimeout(() => {
       console.log('[Remote-Auto] Clicking VOE hoster after ' + delay + 'ms');
@@ -293,7 +293,7 @@ function handlePlayPause(site) {
   } else if (site === "aniworld") {
     // Check if we are on VOE hoster, if not, switch to it
     ensureVoeActive();
-    
+
     // AniWorld has a parent-level overlay before the iframe is actually active sometimes.
     const parentOverlays = ['.inSiteWebStream', '.hosterSiteVideo', '.play-wrapper', '.play-btn-large', '.play-button'];
     parentOverlays.forEach(selector => {
@@ -374,7 +374,7 @@ function handleVolumeChange(site, up) {
   const dir = up ? 0.1 : -0.1;
   const key = up ? "ArrowUp" : "ArrowDown";
   const keyCode = up ? 38 : 40;
-  
+
   if (site === 'youtube') {
     dispatchKey(key, { code: key, keyCode: keyCode, target: document.body });
   } else if (site === 'netflix') {
@@ -493,7 +493,7 @@ function togglePseudoFullscreen(element) {
     element.style.setProperty('margin', '0', 'important');
     element.style.setProperty('padding', '0', 'important');
     element.style.setProperty('object-fit', 'contain', 'important');
-    
+
     // Prevent ancestors from trapping fixed position inside a transform context
     let parent = element.parentElement;
     while (parent && parent !== document.body && parent !== document.documentElement) {
@@ -507,7 +507,7 @@ function togglePseudoFullscreen(element) {
       }
       parent = parent.parentElement;
     }
-    
+
     document.body.style.setProperty('overflow', 'hidden', 'important');
     isPseudoFullscreen = true;
   } else {
@@ -535,7 +535,7 @@ function handleToggleFullscreen(site) {
     // Crucial: pseudo-fullscreen the iframe ITSELF in the parent document so it fills the screen!
     const iframe = findVoeIframe();
     if (iframe) togglePseudoFullscreen(iframe);
-    
+
     // Then send the command so the iframe pseudo-fullscreens its internal video element.
     broadcastToIframes("TOGGLE_FULLSCREEN");
   } else {
@@ -608,12 +608,12 @@ if (window === window.top && detectSite() === "aniworld") {
 // Hybrid Auto-trigger play button for AniWorld iframes on load
 if (window !== window.top && (detectSite() === "aniworld" || window.location.href.includes("voe"))) {
   console.log("[Content] VOE iframe detected. Starting hybrid auto-play monitoring...");
-  
+
   let attempts = 0;
   const maxAttempts = 15; // Try for ~7.5 seconds (15 * 500ms)
 
   // A. Intersection/Mutation monitoring is implicitly handled by the polling loop below
-  
+
   // B. Polling loop: clicks overlays and tries muted playback as fallback
   const autoPlayInterval = setInterval(() => {
     attempts++;
@@ -623,7 +623,7 @@ if (window !== window.top && (detectSite() === "aniworld" || window.location.hre
     if (video && !video.paused) {
       console.log("[Content] Video is playing, stopping monitoring.");
       clearInterval(autoPlayInterval);
-      
+
       // If we fallback muted it, attempt to restore audio after a short delay
       if (video.muted) {
         setTimeout(() => {
@@ -636,7 +636,7 @@ if (window !== window.top && (detectSite() === "aniworld" || window.location.hre
 
     // Try starting the video either via overlay click or fallback play()
     if (tryPlayOverlay(video)) {
-        console.log("[Content] Auto-play action attempted (Attempt " + attempts + ")");
+      console.log("[Content] Auto-play action attempted (Attempt " + attempts + ")");
     }
 
     if (attempts >= maxAttempts) {
