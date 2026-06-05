@@ -28,8 +28,11 @@ The project consists of three main parts:
 ## Installation & Setup
 
 ### 1. Start the Server
-- **Windows**: Just double-click the `Start Server.vbs` file. This will safely start the Node.js server in the background without keeping a terminal window open.
-- **Manual**: Alternatively, open a terminal in the `/server` folder and run `npm start` (or `node server.js`).
+- **Windows (Background)**: Just double-click the `Start Server.vbs` file. This will safely start the Node.js server in the background without keeping a terminal window open.
+- **Windows (Terminal)**: Double-click `start.cmd` or run it from a terminal to start the server with a visible console window.
+- **Manual**: Alternatively, open a terminal in the `/server` folder and run `node server.js`.
+
+> **Note**: If you get a PowerShell execution policy error when running `npm start`, use `node server.js` directly instead, or use the provided `start.cmd` / `Start Server.vbs` scripts which bypass this issue.
 
 ### 2. Load the Extension
 **For Chrome / Edge / Brave (MV3):**
