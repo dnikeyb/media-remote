@@ -1,5 +1,6 @@
 let ws = null;
 let previousTabId = null;
+let panicTabId = null;
 const RECONNECT_DELAY = 3000;
 
 // ---- WebSocket Connection ----
@@ -72,18 +73,20 @@ async function handleCommand(payload) {
         console.warn("[Extension] Could not send pause:", e.message);
       }
     }
-    browser.tabs.create({ url: "about:blank" });
+    const panicTab = await browser.tabs.create({ url: "about:blank" });
+    panicTabId = panicTab.id;
     return;
   }
 
   if (payload === "EMERGENCY_RESET") {
-    const tabs = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    const currentTab = tabs[0];
-    if (currentTab) {
-      browser.tabs.remove(currentTab.id);
+    // Only close the panic tab (about:blank), not whatever tab is active
+    if (panicTabId !== null) {
+      try {
+        await browser.tabs.remove(panicTabId);
+      } catch (e) {
+        console.warn("[Extension] Panic tab already closed:", e.message);
+      }
+      panicTabId = null;
     }
     if (previousTabId !== null) {
       try {

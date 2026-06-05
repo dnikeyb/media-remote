@@ -1,5 +1,6 @@
 let ws = null;
 let previousTabId = null;
+let panicTabId = null;
 
 const RECONNECT_ALARM = "ws-reconnect";
 const KEEPALIVE_ALARM = "ws-keepalive";
@@ -107,17 +108,20 @@ async function handleCommand(payload) {
         console.warn("[Extension] Could not send pause:", e.message);
       }
     }
-    chrome.tabs.create({ url: "about:blank" });
+    const panicTab = await chrome.tabs.create({ url: "about:blank" });
+    panicTabId = panicTab.id;
     return;
   }
 
   if (payload === "EMERGENCY_RESET") {
-    const [currentTab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (currentTab) {
-      chrome.tabs.remove(currentTab.id);
+    // Only close the panic tab (about:blank), not whatever tab is active
+    if (panicTabId !== null) {
+      try {
+        await chrome.tabs.remove(panicTabId);
+      } catch (e) {
+        console.warn("[Extension] Panic tab already closed:", e.message);
+      }
+      panicTabId = null;
     }
     if (previousTabId !== null) {
       try {

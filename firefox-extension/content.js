@@ -464,6 +464,18 @@ function handleNextEpisode(site) {
   }
 }
 
+function handleChangeLanguage(site, langKey) {
+  if (site === "aniworld") {
+    const langImg = document.querySelector(`.changeLanguageBox img[data-lang-key="${langKey}"]`);
+    if (langImg) {
+      langImg.click();
+      console.log(`[Content] Language changed to key: ${langKey}`);
+    } else {
+      console.warn(`[Content] Language key ${langKey} not found for this episode.`);
+    }
+  }
+}
+
 let isPseudoFullscreen = false;
 let modifiedAncestors = [];
 
@@ -571,6 +583,15 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case "SKIP_INTRO":
         handleSkipIntro(site);
         break;
+      case "CHANGE_LANGUAGE_1":
+        handleChangeLanguage(site, 1);
+        break;
+      case "CHANGE_LANGUAGE_2":
+        handleChangeLanguage(site, 2);
+        break;
+      case "CHANGE_LANGUAGE_3":
+        handleChangeLanguage(site, 3);
+        break;
       default:
         console.warn(`[Content] Unknown command: ${message.payload}`);
     }
@@ -602,6 +623,14 @@ if (window !== window.top && (detectSite() === "aniworld" || window.location.hre
     if (video && !video.paused) {
       console.log("[Content] Video is playing, stopping monitoring.");
       clearInterval(autoPlayInterval);
+      
+      // If we fallback muted it, attempt to restore audio after a short delay
+      if (video.muted) {
+        setTimeout(() => {
+          console.log("[Content] Attempting to unmute after auto-play.");
+          video.muted = false;
+        }, 1500);
+      }
       return;
     }
 
