@@ -634,6 +634,39 @@ console.log("[Content] Remote control content script loaded. Frame:", window ===
 // Top-level check to ensure VOE is selected for AniWorld
 if (window === window.top && detectSite() === "aniworld") {
   setTimeout(() => ensureVoeActive(), 2000);
+
+  // Attempt to bypass autoplay restrictions by delegating autoplay permission to all iframes
+  const grantAutoplay = (node) => {
+    if (node.tagName === 'IFRAME') {
+      let allowAttr = node.getAttribute('allow') || '';
+      if (!allowAttr.includes('autoplay')) {
+        console.log("[Content] Granting autoplay to iframe:", node.src);
+        node.setAttribute('allow', allowAttr ? allowAttr + '; autoplay; fullscreen' : 'autoplay; fullscreen');
+        
+        // If it already has a media source, reload it to apply the new permissions
+        if (node.src && (node.src.includes('voe') || node.src.includes('redirect'))) {
+          const src = node.src;
+          node.src = 'about:blank';
+          setTimeout(() => { node.src = src; }, 50);
+        }
+      }
+    }
+  };
+
+  document.querySelectorAll('iframe').forEach(grantAutoplay);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.tagName === 'IFRAME') {
+          grantAutoplay(node);
+        } else if (node.querySelectorAll) {
+          node.querySelectorAll('iframe').forEach(grantAutoplay);
+        }
+      });
+    });
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
 }
 
 // Hybrid Auto-trigger play button for AniWorld iframes on load
