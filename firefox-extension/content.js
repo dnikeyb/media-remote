@@ -103,7 +103,7 @@ const PLAY_SELECTORS = [
   '[class*="play-button"]'
 ];
 
-function tryPlayOverlay(video) {
+function tryPlayOverlay(video, isManualPlay = false) {
   // 1. Try specific known selectors
   for (const selector of PLAY_SELECTORS) {
     const btn = document.querySelector(selector);
@@ -136,8 +136,12 @@ function tryPlayOverlay(video) {
     setTimeout(() => {
       if (video && video.paused) {
         video.play().catch(() => {
-          video.muted = true;
-          video.play();
+          if (!isManualPlay) {
+            video.muted = true;
+            video.play().catch(e => console.error("[Content] Fallback muted play failed:", e));
+          } else {
+            console.log("[Content] Manual play blocked by browser. Not muting.");
+          }
         });
       }
     }, playDelay);
@@ -157,7 +161,7 @@ window.addEventListener("message", (event) => {
       case "PLAY_PAUSE":
         console.log("[Content] VOE Iframe: Attempting PLAY_PAUSE");
         if (!video || video.paused) {
-          tryPlayOverlay(video);
+          tryPlayOverlay(video, true);
         } else if (video) {
           video.pause();
         }

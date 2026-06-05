@@ -113,10 +113,10 @@ body {
 .glass-panel {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 40px);
+  min-height: calc(100dvh - 24px);
   max-width: 440px;
-  margin: 20px auto;
-  padding: 32px 24px;
+  margin: 12px auto;
+  padding: 24px 20px;
   border-radius: var(--radius-xl);
   
   /* Glassmorphism magic */
@@ -182,7 +182,7 @@ body {
 .controls-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -196,7 +196,7 @@ body {
 
 .volume-row .btn {
   flex: 1;
-  padding: 24px 8px;
+  padding: 16px 8px;
 }
 
 /* ===== Glass Buttons ===== */
@@ -206,8 +206,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 32px 16px;
+  gap: 8px;
+  padding: 20px 12px;
   border-radius: var(--radius-lg);
   
   /* Initial Glass State */
@@ -237,8 +237,8 @@ body {
 
 /* Icon */
 .btn-icon {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   position: relative;
   z-index: 2;
   stroke: currentColor;
@@ -432,39 +432,48 @@ body {
 /* ===== Responsive adjustments based on height ===== */
 @media (max-height: 850px) {
   .glass-panel {
-    margin: 10px auto;
-    padding: 24px 20px;
-    min-height: calc(100dvh - 20px);
+    margin: 8px auto;
+    padding: 16px 16px;
+    min-height: calc(100dvh - 16px);
   }
   .btn {
-    padding: 16px 12px;
-    gap: 8px;
-  }
-  .btn-icon {
-    width: 28px;
-    height: 28px;
-  }
-  .header {
-    margin-bottom: 20px;
-  }
-  .controls-grid {
-    gap: 12px;
-  }
-}
-
-@media (max-height: 700px) {
-  .btn {
-    padding: 12px 6px;
+    padding: 14px 10px;
     gap: 6px;
+  }
+  .volume-row .btn {
+    padding: 12px 6px;
   }
   .btn-icon {
     width: 24px;
     height: 24px;
   }
+  .header {
+    margin-bottom: 16px;
+  }
+  .controls-grid {
+    gap: 10px;
+  }
+}
+
+@media (max-height: 700px) {
+  .btn {
+    padding: 10px 6px;
+    gap: 4px;
+  }
+  .volume-row .btn {
+    padding: 8px 4px;
+  }
+  .btn-icon {
+    width: 20px;
+    height: 20px;
+  }
   .btn span {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   .header h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+  }
+  .header {
+    margin-bottom: 12px;
   }
 }
