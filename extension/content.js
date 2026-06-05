@@ -103,8 +103,6 @@ const PLAY_SELECTORS = [
   '[class*="play-button"]'
 ];
 
-let lastUnmuteTime = 0;
-
 function showToast(message) {
   let toast = document.getElementById('remote-toast');
   if (!toast) {
@@ -157,14 +155,10 @@ function tryPlayOverlay(video, isManualPlay = false) {
     const playDelay = randomDelay(1200, 1600);
     setTimeout(() => {
       if (video && video.paused) {
-        video.play().catch(() => {
-          const recentlyUnmuted = (Date.now() - lastUnmuteTime) < 8000;
-          if (isManualPlay && recentlyUnmuted) {
-            console.log("[Content] Manual play blocked by browser after unmute. Not muting.");
-            showToast("Audio blocked by browser. Please tap the video screen once.");
-          } else {
-            video.muted = true;
-            video.play().catch(e => console.error("[Content] Fallback muted play failed:", e));
+        video.play().catch(e => {
+          console.error("[Content] Playback failed:", e);
+          if (isManualPlay) {
+            showToast("Playback blocked by browser. Please tap the video screen once.");
           }
         });
       }
@@ -212,7 +206,6 @@ window.addEventListener("message", (event) => {
       case "MUTE_TOGGLE":
         if (video) {
           video.muted = !video.muted;
-          if (!video.muted) lastUnmuteTime = Date.now();
         }
         break;
       case "SKIP_INTRO":
@@ -687,14 +680,6 @@ if (window !== window.top && (detectSite() === "aniworld" || window.location.hre
     if (video && !video.paused) {
       console.log("[Content] Video is playing, stopping monitoring.");
       clearInterval(autoPlayInterval);
-
-      // If we fallback muted it, attempt to restore audio after a short delay
-      if (video.muted) {
-        setTimeout(() => {
-          console.log("[Content] Attempting to unmute after auto-play.");
-          video.muted = false;
-        }, 1500);
-      }
       return;
     }
 
