@@ -103,6 +103,21 @@ const PLAY_SELECTORS = [
   '[class*="play-button"]'
 ];
 
+let lastUnmuteTime = 0;
+
+function showToast(message) {
+  let toast = document.getElementById('remote-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'remote-toast';
+    toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:white; padding:12px 24px; border-radius:8px; z-index:999999; font-family:sans-serif; font-size:16px; pointer-events:none; transition:opacity 0.3s; text-align:center;';
+    document.body.appendChild(toast);
+  }
+  toast.innerText = message;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+}
+
 function tryPlayOverlay(video, isManualPlay = false) {
   // 1. Try specific known selectors
   for (const selector of PLAY_SELECTORS) {
@@ -111,7 +126,13 @@ function tryPlayOverlay(video, isManualPlay = false) {
       const delay = randomDelay();
       console.log('[Remote-Auto] Clicking play overlay after ' + delay + 'ms:', selector);
       setTimeout(() => {
-        if (btn && typeof btn.click === 'function') btn.click();
+        if (btn && typeof btn.click === 'function') {
+          btn.click();
+          // Double-click to bypass VOE ad overlays
+          setTimeout(() => {
+            if (btn && typeof btn.click === 'function') btn.click();
+          }, 300);
+        }
       }, delay);
       return true;
     }
@@ -127,6 +148,7 @@ function tryPlayOverlay(video, isManualPlay = false) {
     if (el && typeof el.click === 'function') {
       console.log('[Remote-Auto] Centered element found, clicking:', el.tagName);
       el.click();
+      setTimeout(() => { if (el && typeof el.click === 'function') el.click(); }, 300);
     }
   }, delay);
 
@@ -136,11 +158,13 @@ function tryPlayOverlay(video, isManualPlay = false) {
     setTimeout(() => {
       if (video && video.paused) {
         video.play().catch(() => {
-          if (!isManualPlay) {
+          const recentlyUnmuted = (Date.now() - lastUnmuteTime) < 8000;
+          if (isManualPlay && recentlyUnmuted) {
+            console.log("[Content] Manual play blocked by browser after unmute. Not muting.");
+            showToast("Audio blocked by browser. Please tap the video screen once.");
+          } else {
             video.muted = true;
             video.play().catch(e => console.error("[Content] Fallback muted play failed:", e));
-          } else {
-            console.log("[Content] Manual play blocked by browser. Not muting.");
           }
         });
       }
@@ -185,9 +209,12 @@ window.addEventListener("message", (event) => {
       case "VOLUME_DOWN":
         video.volume = Math.max(0, Math.min(1, video.volume - 0.1));
         break;
-      //case "MUTE_TOGGLE":
-      //video.muted = !video.muted;
-      //break;
+      case "MUTE_TOGGLE":
+        if (video) {
+          video.muted = !video.muted;
+          if (!video.muted) lastUnmuteTime = Date.now();
+        }
+        break;
       case "SKIP_INTRO":
         video.currentTime += 85;
         break;
