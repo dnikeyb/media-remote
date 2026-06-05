@@ -52,3 +52,9 @@ To keep the extension permanently installed:
 2. Open your smartphone browser and navigate to: `http://<YOUR-PC-IP-ADDRESS>:8080`
    *(Example: `http://192.168.1.100:8080`. Find your PC's IP using `ipconfig` on Windows or `ifconfig` on Mac/Linux).*
 3. The remote will load, and the dot in the top corner will turn green once connected.
+
+
+### Bug-Fixes
+1. If you experience that the sound is muted, whenever you try to play a video on AniWorld:
+   Go to "chrome://settings/content/siteDetails?site=https%3A%2F%2Faniworld.to" and click on "Sound"  -> "Allow". 
+   Or click on the settings symbol in the address bar, when on aniworld.to and click on "Site settings" -> "Sound" -> "Allow".
