@@ -6,7 +6,7 @@ Set objShell = CreateObject("WScript.Shell")
 strScriptFolder = objFSO.GetParentFolderName(WScript.ScriptFullName)
 
 ' Set the working directory to the server folder
-objShell.CurrentDirectory = "C:\Users\Nikita\OneDrive\Desktop\projekt1\server"
+objShell.CurrentDirectory = strScriptFolder & "\server"
 
 ' Run the server invisibly (0 = hidden window)
 ' Use "node server.js" directly to avoid PowerShell execution policy issues with npm.ps1
